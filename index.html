@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SourceCode Extractor — Bongkar Source Code Website Manapun</title>
+<meta name="description" content="Ekstrak HTML, CSS, dan JavaScript dari website manapun hanya dengan satu URL." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" />
+
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ambient glow background -->
+<div class="bg-orb bg-orb--one" aria-hidden="true"></div>
+<div class="bg-orb bg-orb--two" aria-hidden="true"></div>
+<div class="bg-grid" aria-hidden="true"></div>
+
+<div class="app">
+
+  <!-- ============ ACTIVITY BAR (VS Code style) ============ -->
+  <nav class="activity-bar" aria-label="Navigasi utama">
+    <div class="activity-bar__logo" title="SourceCode Extractor">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 4L2 12L8 20" stroke="url(#g1)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 4L22 12L16 20" stroke="url(#g1)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <defs>
+          <linearGradient id="g1" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#A855F7"/>
+            <stop offset="1" stop-color="#7C3AED"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <button class="activity-bar__btn is-active" data-panel="explorer" title="Explorer &amp; Riwayat" aria-label="Explorer">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg>
+    </button>
+    <button class="activity-bar__btn" data-panel="stats" title="Statistik" aria-label="Statistik">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+    </button>
+    <a class="activity-bar__btn" href="https://github.com" target="_blank" rel="noopener" title="Dokumentasi" aria-label="Dokumentasi">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.9.4-1.4 1-1.4 2.2M12 17h.01"/></svg>
+    </a>
+  </nav>
+
+  <div class="app__body">
+
+    <!-- ============ HEADER ============ -->
+    <header class="topbar">
+      <div class="topbar__brand">
+        <span class="topbar__title">SourceCode<span class="accent-text">Extractor</span></span>
+        <span class="topbar__badge">v1.0 · Premium</span>
+      </div>
+      <div class="topbar__dots" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+    </header>
+
+    <!-- ============ URL INPUT / HERO ============ -->
+    <section class="hero-card glass">
+      <div class="hero-card__intro">
+        <p class="eyebrow">Ekstraksi source code instan</p>
+        <h1>Bongkar isi website mana pun<br>hanya dari satu URL.</h1>
+        <p class="hero-card__desc">Masukkan alamat website, dan sistem akan mengambil HTML, seluruh file CSS, serta JavaScript-nya secara langsung — lengkap dengan preview dan statistik.</p>
+      </div>
+      <form class="url-form" id="extractForm" autocomplete="off">
+        <div class="url-form__field">
+          <svg class="url-form__icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.5-1.5"/></svg>
+          <input type="text" id="urlInput" name="url" placeholder="https://contoh-website.com" inputmode="url" required />
+        </div>
+        <button type="submit" class="btn btn--primary" id="extractBtn">
+          <span class="btn__label">Extract Source Code</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+      <p class="url-form__hint" id="formHint">Contoh: <button type="button" class="link-chip" data-example="https://example.com">example.com</button></p>
+    </section>
+
+    <!-- ============ LOADING ============ -->
+    <section class="loading-panel" id="loadingPanel" hidden>
+      <div class="loading-panel__scanner">
+        <div class="loading-panel__ring"></div>
+        <svg class="loading-panel__icon" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m18 16 4-4-4-4M6 8l-4 4 4 4M14.5 4l-5 16"/></svg>
+      </div>
+      <p class="loading-panel__text" id="loadingText">Menghubungkan ke server…</p>
+      <div class="loading-panel__bar"><span></span></div>
+    </section>
+
+    <!-- ============ ERROR ============ -->
+    <section class="error-panel" id="errorPanel" hidden>
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+      <div>
+        <p class="error-panel__title">Ekstraksi gagal</p>
+        <p class="error-panel__desc" id="errorMessage">Terjadi kesalahan.</p>
+      </div>
+      <button class="btn btn--ghost btn--sm" id="errorDismiss">Tutup</button>
+    </section>
+
+    <!-- ============ WORKSPACE ============ -->
+    <section class="workspace" id="workspace" hidden>
+
+      <!-- Sidebar: Explorer + History -->
+      <aside class="sidebar glass" id="sidebarExplorer">
+        <div class="sidebar__section">
+          <div class="sidebar__heading">
+            <span>Explorer</span>
+          </div>
+          <ul class="file-tree" id="fileTree"></ul>
+        </div>
+
+        <div class="sidebar__section sidebar__section--grow">
+          <div class="sidebar__heading">
+            <span>Riwayat</span>
+            <button class="icon-btn" id="clearHistoryBtn" title="Hapus semua riwayat" aria-label="Hapus riwayat">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/></svg>
+            </button>
+          </div>
+          <ul class="history-list" id="historyList">
+            <li class="history-empty">Belum ada riwayat scan.</li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Stats bar -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-chip">
+          <span class="stat-chip__label">File CSS</span>
+          <span class="stat-chip__value" id="statCss">0</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip__label">File JS</span>
+          <span class="stat-chip__value" id="statJs">0</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip__label">Total ukuran</span>
+          <span class="stat-chip__value" id="statSize">0 KB</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip__label">Waktu ambil</span>
+          <span class="stat-chip__value" id="statTime">0 ms</span>
+        </div>
+        <div class="stat-chip stat-chip--url" id="statUrlChip" title="">
+          <span class="stat-chip__label">Sumber</span>
+          <span class="stat-chip__value" id="statUrl">—</span>
+        </div>
+      </div>
+
+      <!-- Editor -->
+      <main class="editor glass">
+        <div class="editor__tabbar" role="tablist">
+          <button class="editor__tab is-active" data-tab="preview" role="tab" aria-selected="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preview
+          </button>
+          <button class="editor__tab" data-tab="html" role="tab" aria-selected="false">
+            <span class="dot dot--html"></span> index.html
+          </button>
+          <button class="editor__tab" data-tab="css" role="tab" aria-selected="false">
+            <span class="dot dot--css"></span> style.css
+          </button>
+          <button class="editor__tab" data-tab="js" role="tab" aria-selected="false">
+            <span class="dot dot--js"></span> script.js
+          </button>
+
+          <div class="editor__tabbar-spacer"></div>
+
+          <div class="editor__search">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="searchInput" placeholder="Cari dalam kode…" />
+            <span class="editor__search-count" id="searchCount"></span>
+            <button class="icon-btn" id="searchPrev" title="Sebelumnya" aria-label="Hasil sebelumnya">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+            </button>
+            <button class="icon-btn" id="searchNext" title="Berikutnya" aria-label="Hasil berikutnya">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="editor__toolbar">
+          <div class="editor__toolbar-left" id="toolbarMeta">Menampilkan pratinjau langsung website</div>
+          <div class="editor__toolbar-right">
+            <button class="btn btn--ghost btn--sm" id="copyBtn">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy
+            </button>
+            <button class="btn btn--ghost btn--sm" id="downloadCurrentBtn">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/></svg>
+              Download
+            </button>
+            <button class="btn btn--outline-accent btn--sm" id="downloadZipBtn">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8M3 8l2-5h14l2 5M3 8h18M10 12h4"/></svg>
+              Download All (.zip)
+            </button>
+          </div>
+        </div>
+
+        <div class="editor__panels">
+          <div class="editor__panel is-active" id="panel-preview">
+            <div class="preview-frame-wrap">
+              <iframe id="previewFrame" title="Pratinjau website" sandbox="allow-same-origin allow-scripts"></iframe>
+              <div class="preview-fallback" id="previewFallback" hidden>
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+                <p>Website ini memblokir tampilan preview (X-Frame-Options / CSP). Gunakan tab HTML/CSS/JS untuk melihat source code-nya.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="editor__panel" id="panel-html">
+            <pre class="line-numbers"><code class="language-markup" id="codeHtml"></code></pre>
+          </div>
+          <div class="editor__panel" id="panel-css">
+            <pre class="line-numbers"><code class="language-css" id="codeCss"></code></pre>
+          </div>
+          <div class="editor__panel" id="panel-js">
+            <pre class="line-numbers"><code class="language-javascript" id="codeJs"></code></pre>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- ============ EMPTY STATE ============ -->
+    <section class="empty-state" id="emptyState">
+      <div class="empty-state__glow"></div>
+      <svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 4 2 12l6 8M16 4l6 8-6 8M14 4l-4 16"/></svg>
+      <h2>Belum ada source code dimuat</h2>
+      <p>Masukkan URL website di atas lalu klik <strong>Extract Source Code</strong> untuk mulai membongkar HTML, CSS, dan JavaScript-nya.</p>
+    </section>
+
+    <footer class="app-footer">
+      <span>SourceCode Extractor — dibuat untuk developer yang penasaran.</span>
+    </footer>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
