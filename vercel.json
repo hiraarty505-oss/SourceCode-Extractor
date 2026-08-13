@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/extract.js", "use": "@vercel/node" },
+    { "src": "public/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/extract", "dest": "/api/extract.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
+}
