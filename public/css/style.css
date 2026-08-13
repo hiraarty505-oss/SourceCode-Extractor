@@ -563,8 +563,16 @@ body {
 .editor__toolbar-right { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .editor__panels { flex: 1; min-height: 0; position: relative; background: var(--card); }
-.editor__panel { display: none; height: 100%; overflow: auto; }
-.editor__panel.is-active { display: block; animation: fadeIn .25s var(--ease); }
+.editor__panel { display: none; height: 100%; overflow: auto; opacity: 0; }
+.editor__panel.is-active {
+  display: block;
+  opacity: 1;
+  animation: panelIn .22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 .editor__panel pre[class*="language-"] {
   margin: 0;
