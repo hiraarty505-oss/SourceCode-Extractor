@@ -222,7 +222,13 @@
      target page — and every linked CSS/JS file — through a public
      CORS proxy, since browsers block direct cross-origin fetches.
      ------------------------------------------------------------ */
-  const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+  // Beberapa proxy dicoba berurutan — kalau satu down/rate-limited, otomatis
+  // lanjut ke proxy berikutnya, supaya fitur tidak gagal total.
+  const CORS_PROXIES = [
+    (url) => "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+    (url) => "https://corsproxy.io/?url=" + encodeURIComponent(url),
+    (url) => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(url),
+  ];
 
   function normalizeUrl(input) {
     let u = input.trim();
@@ -231,9 +237,18 @@
   }
 
   async function fetchViaProxy(absoluteUrl) {
-    const res = await fetch(CORS_PROXY + encodeURIComponent(absoluteUrl));
-    if (!res.ok) throw new Error(`Gagal mengambil ${absoluteUrl} (${res.status})`);
-    return res.text();
+    let lastError = null;
+    for (const buildProxyUrl of CORS_PROXIES) {
+      try {
+        const res = await fetch(buildProxyUrl(absoluteUrl));
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        return await res.text();
+      } catch (err) {
+        lastError = err;
+        // coba proxy berikutnya
+      }
+    }
+    throw new Error(`Gagal mengambil ${absoluteUrl} (semua proxy gagal: ${lastError?.message || "unknown"})`);
   }
 
   function filenameFromUrl(assetUrl, fallbackExt) {
